@@ -1,48 +1,78 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GestionJoueur : MonoBehaviour
 {
-    public bool aLaCle = false;
-    public int score = 0;
-    
+    public TextMeshProUGUI texteChronoUI;
+    public GameObject ecranVictoire;
     public GameObject ecranDefaite;
-    public TextMeshProUGUI texteScoreUI; // La case pour glisser ton texte
+
+    public float altitudeChute = -10f;
+
+    private float tempsEcoule = 0f;
+    private bool jeuEstLance = false;
+    private bool partieTerminee = false;
 
     void Start()
     {
-        // Au démarrage, on affiche 0
-        MettreAJourTexte();
+        // C'EST ICI QUE TU APPUIES SUR LECTURE
+        Time.timeScale = 1;
+
+        if (ecranVictoire != null) ecranVictoire.SetActive(false);
+        if (ecranDefaite != null) ecranDefaite.SetActive(false);
+        if (texteChronoUI != null) texteChronoUI.text = "Trouve la pièce !";
+
+        DemarrerLeJeu();
     }
 
-    public void Mourir()
+    void Update()
     {
-        Debug.Log("Le joueur est mort !");
-        if(ecranDefaite != null)
+        if (partieTerminee) return;
+
+        if (jeuEstLance)
         {
-            ecranDefaite.SetActive(true);
-            Time.timeScale = 0;
+            tempsEcoule += Time.deltaTime;
+            if (texteChronoUI != null) texteChronoUI.text = "Temps : " + tempsEcoule.ToString("F2") + "s";
+        }
+
+        if (transform.position.y < altitudeChute)
+        {
+            PerdreLaPartie();
         }
     }
 
-    public void AjouterScore(int points)
+    public void DemarrerLeJeu()
     {
-        score = score + points;
-        MettreAJourTexte(); // On met à jour l'affichage
+        jeuEstLance = true;
+        tempsEcoule = 0f;
     }
 
-    // Petite fonction pour éviter de répéter le code
-    void MettreAJourTexte()
+    public void GagnerLaPartie()
     {
-        if (texteScoreUI != null)
-        {
-            texteScoreUI.text = "Score : " + score;
-        }
-        else 
-        {
-            Debug.Log("Oubli : Tu n'as pas relié le TexteScoreUI dans l'Inspector !");
-        }
+        if (partieTerminee) return;
+
+        partieTerminee = true;
+        jeuEstLance = false;
+
+        if (ecranVictoire != null) ecranVictoire.SetActive(true);
+        Time.timeScale = 0;
+    }
+
+    public void PerdreLaPartie()
+    {
+        if (partieTerminee) return;
+
+        partieTerminee = true;
+        jeuEstLance = false;
+
+        if (ecranDefaite != null) ecranDefaite.SetActive(true);
+        Time.timeScale = 0;
+    }
+
+    public void RetourAuMenu()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(0);
     }
 }
